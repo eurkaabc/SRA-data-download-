@@ -1,38 +1,39 @@
 # SRA Data Download and Fastq Conversion
 
-## 介绍
-此脚本用于从 NCBI 的 SRA 数据库下载 `.sra` 文件，并将其转换为 `.fastq.gz` 格式。它使用了 **SRAToolkit** 工具包中的 `fastq-dump` 或 `pfastq-dump` 命令，将每个 `.sra` 文件转换成对应的 `.fastq.gz` 文件，支持双端（paired-end）数据。
+## Introduction
+This script is designed to download `.sra` files from the NCBI SRA database and convert them into `.fastq.gz` format. It utilizes the **SRAToolkit** package's `fastq-dump` or `pfastq-dump` commands to convert each `.sra` file into the corresponding `.fastq.gz` files, supporting paired-end data.
 
-## 步骤
 
-### 1. 下载并安装 **SRAToolkit**
-首先，您需要安装 **SRAToolkit**。在您的机器上创建一个目录并下载工具包：
+### 1. Download and Install **SRAToolkit**
+
+First, you need to install the **SRAToolkit**. Create a directory on your machine and download the toolkit:
+
 
 ```bash
-# 创建工具存放目录
+# Create a directory for the tools
 mkdir ~/SRAToolkit
 
-# 进入该目录
+# Navigate into the directory
 cd ~/SRAToolkit
 
-# 下载 SRAToolkit 2.10.9 版本的工具包
+# Download SRAToolkit version 2.10.9
 wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/2.10.9/sratoolkit.2.10.9-ubuntu64.tar.gz
 
-# 解压下载的工具包
+# Extract the downloaded toolkit
 tar xzvf sratoolkit.2.10.9-ubuntu64.tar.gz
 
 ```
 
-### 2. 使用 prefetch 下载 .sra 文件####
-下载完 SRAToolkit 后，使用 prefetch 命令来获取 SRA 数据文件。例如：
+### 2. Use `prefetch`to Download `.sra` Files
+Once SRAToolkit is installed, you can use the prefetch command to download SRA data files. For example:
 ```bash
-# 下载指定的 SRA 数据文件
-prefetch SRR1553610  # 用您实际的 SRA 访问号替换 SRR1553610
+# Download a specific SRA data file
+prefetch SRR1553610  # Replace SRR1553610 with your actual SRA accession number
 ```
 
-### 3. 批量转换 .sra 文件为 .fastq.gz 格式###
+### 3. Batch Convert `.sra` Files to `.fastq.gz` Format
 
-假设您已经下载了多个 .sra 文件，现在我们可以将它们批量转换为 .fastq.gz 格式。以下是转换文件的脚本：
+After downloading your `.sra` files, you can batch convert them into `.fastq.gz` format. Here's the script to do that:
 
 ```bash
 # Define the source directory containing the .sra files 
@@ -59,37 +60,37 @@ nohup bash -c "
 echo "Process started in the background. Check the log file at $output_dir/process_log.txt"
 ```
 
-### 4. 脚本详细解释 ###
-目录定义
+### 4. Script Breakdown
+#### Directory Definitions:
 
 - `rawdata_dir`：存放 .sra 文件的源目录。
 
 - `output_dir`：保存转换后 .fastq.gz 文件的目标目录。
 
-#### 批量转换 ####
+#### Batch Conversion ####
 
-该脚本将遍历 `rawdata_dir` 中的所有 `.sra` 文件，使用 `fastq-dump` 进行转换。每个 `.sra` 文件将被转换为两个 `.fastq.gz` 文件（假设数据是双端的）。所有转换过程将在后台运行，以避免因会话断开而中断。
+The script will loop through all `.sra` files in the `rawdata_dir` and use `fastq-dump` to convert them. Each `.sra` file will be converted into two `.fastq.gz` files (for paired-end data). The entire conversion process runs in the background to avoid interruption due to session disconnection.
 
-#### 日志输出 ####
+#### Logging: ####
 
-转换过程的详细日志将被记录到 process_log.txt 文件中，您可以随时检查该文件以查看转换进度。
+Detailed logs of the conversion process are saved to `process_log.txt`. You can monitor this file at any time to check the conversion progress.
 
-### 5. 使用 `nohup` 进行后台运行 ###
+### 5. Running the Script in the Background with `nohup`  ###
 
-使用 nohup 确保即使在会话断开后，转换过程依然会在后台继续执行。输出会重定向到 process_log.txt 文件，您可以通过以下命令查看进度：
+To ensure the conversion continues in the background even if your session disconnects, we use `nohup`. The output will be redirected to `process_log.txt`, which you can monitor as follows:
 ```
-# 查看处理日志
+# View the processing log
 `tail -f /home/Weixin.Zhang/20250918_pediatirc_tumor/rhabdoid_tumor/GSE71506/1.data/process_log.txt`
 ```
 
-### 6. 注意事项 ###
+### 6. Considerations ###
 
-- 确保目标目录有足够的存储空间来保存 .fastq.gz 文件，尤其是如果您有大量数据的话。
+- Ensure that your target directory has sufficient storage space to hold the `.fastq.gz` files, especially if you're working with large datasets.
 
-- `fastq-dump` 默认会将 `.sra` 文件分成两部分，分别对应 `_1.fastq.gz` 和 `_2.fastq.gz`。如果是单端数据，则只会生成 `_1.fastq.gz` 文件。
+- By default, `fastq-dump` splits the `.sra` files into two parts, resulting in `_1.fastq.gz` and `_2.fastq.gz` files for paired-end data. For single-end data, only `_1.fastq.gz` files will be generated.
 
-- 运行时，如果遇到任何错误，可以通过查看日志文件 process_log.txt 获取详细的错误信息。
+- If any errors occur during the process, the details will be logged in `process_log.txt`, where you can find more information about the issues.
 
-### 总结 ###
+### Conclusion ###
 
-该脚本自动化了从 NCBI 下载 `.sra` 数据并将其转换为 `.fastq.gz` 格式的过程，适用于大规模数据的批量处理。您只需指定源数据目录和输出目录，其他过程会自动执行。
+This script automates the process of downloading `.sra` data from NCBI and converting it to .fastq.gz format, making it ideal for large-scale batch processing. Simply specify the source directory for your data and the output directory, and the rest of the process will run automatically.
